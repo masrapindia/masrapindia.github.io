@@ -1,0 +1,515 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Program Support Workflow (CTO Support + System Governance)</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --ink:#0f172a;
+      --muted:#475569;
+
+      --line:#94a3b8;
+      --shadow: 0 8px 24px rgba(2,6,23,.06);
+      --border:#e2e8f0;
+
+      /* Palette */
+      --c-scan-bg:#ecfeff;     /* cyan */
+      --c-scan-br:#22d3ee;
+
+      --c-triage-bg:#fdf2f8;   /* pink */
+      --c-triage-br:#f472b6;
+
+      --c-cto-bg:#eef2ff;      /* indigo */
+      --c-cto-br:#818cf8;
+
+      --c-action-bg:#fff7ed;   /* amber */
+      --c-action-br:#fdba74;
+
+      --c-report-bg:#ecfdf5;   /* green */
+      --c-report-br:#34d399;
+
+      --c-note-bg:#f8fafc;
+      --c-note-br:#cbd5e1;
+
+      --accent:#2563eb;
+    }
+
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--ink);
+    }
+
+    .wrap{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 18px 40px;
+    }
+
+    h1{
+      font-size: 20px;
+      margin: 0 0 6px;
+      letter-spacing: .2px;
+    }
+
+    .sub{
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin: 10px 0 18px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .pill{
+      border: 1px solid var(--border);
+      background: var(--c-note-bg);
+      padding: 6px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    .flow{
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+    }
+
+    .row{
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+      gap:18px;
+      flex-wrap:wrap;
+    }
+
+    .node{
+      min-width: 260px;
+      max-width: 380px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 12px 10px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .node:before{
+      content:"";
+      position:absolute;
+      top:0; left:0; right:0;
+      height: 6px;
+      background: var(--c-note-br);
+    }
+
+    .node .title{
+      font-size: 13px;
+      font-weight: 900;
+      margin: 0 0 6px;
+    }
+
+    .node .meta{
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 8px;
+      line-height: 1.45;
+    }
+
+    .node ul{
+      margin: 0;
+      padding-left: 18px;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--ink);
+    }
+
+    .tag{
+      display:inline-block;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-left: 8px;
+      color: var(--muted);
+      background: #fff;
+      vertical-align: middle;
+    }
+
+    .rule{
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 10px;
+      border-top: 1px dashed var(--border);
+      padding-top: 10px;
+      line-height: 1.55;
+    }
+
+    /* variants */
+    .scan{ background: var(--c-scan-bg); border-color: color-mix(in oklab, var(--c-scan-br) 55%, var(--border)); }
+    .scan:before{ background: var(--c-scan-br); }
+
+    .triage{ background: var(--c-triage-bg); border-color: color-mix(in oklab, var(--c-triage-br) 55%, var(--border)); }
+    .triage:before{ background: var(--c-triage-br); }
+
+    .cto{ background: var(--c-cto-bg); border-color: color-mix(in oklab, var(--c-cto-br) 55%, var(--border)); }
+    .cto:before{ background: var(--c-cto-br); }
+
+    .action{ background: var(--c-action-bg); border-color: color-mix(in oklab, var(--c-action-br) 55%, var(--border)); }
+    .action:before{ background: var(--c-action-br); }
+
+    .report{ background: var(--c-report-bg); border-color: color-mix(in oklab, var(--c-report-br) 55%, var(--border)); }
+    .report:before{ background: var(--c-report-br); }
+
+    /* connectors */
+    .connector{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      color: var(--muted);
+      font-size: 12px;
+      flex-wrap:wrap;
+      padding-top: 6px;
+    }
+
+    .line{
+      width: 120px;
+      height: 2px;
+      background: var(--line);
+      position: relative;
+      border-radius: 999px;
+      opacity: .9;
+    }
+    .line:after{
+      content:"";
+      position:absolute;
+      right:-2px;
+      top:-5px;
+      width:0;
+      height:0;
+      border-left: 10px solid var(--line);
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+    }
+
+    .vline{
+      width: 2px;
+      height: 22px;
+      background: var(--line);
+      position: relative;
+      margin: 0 auto;
+      border-radius: 999px;
+      opacity: .9;
+    }
+    .vline:after{
+      content:"";
+      position:absolute;
+      left:-5px;
+      bottom:-2px;
+      width:0;
+      height:0;
+      border-top: 10px solid var(--line);
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+    }
+
+    .center{ text-align:center; }
+
+    .decision{
+      min-width: 280px;
+      max-width: 540px;
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 12px;
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .decision:before{
+      content:"";
+      position:absolute;
+      top:0; left:0; right:0;
+      height: 6px;
+      background: var(--accent);
+    }
+    .decision .title{
+      font-size: 13px;
+      font-weight: 900;
+      margin: 0 0 6px;
+    }
+    .decision .meta{
+      margin:0;
+      font-size:12px;
+      color: var(--muted);
+      line-height:1.45;
+    }
+
+    .cols{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:18px;
+      align-items:start;
+      justify-items:center;
+    }
+    @media (max-width: 900px){
+      .cols{ grid-template-columns: 1fr; }
+      .line{ width: 80px; }
+    }
+
+    .callout{
+      margin-top: 10px;
+      background: rgba(255,255,255,.65);
+      border: 1px solid color-mix(in oklab, var(--accent) 22%, var(--border));
+      border-radius: 12px;
+      padding: 10px;
+      font-size: 11.5px;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+    .callout strong{ color: var(--ink); }
+
+    .kbd{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      font-size: 11px;
+      padding: 2px 6px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 8px;
+      background: rgba(255,255,255,.7);
+      color: var(--ink);
+    }
+
+    .foot{
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+    }
+
+    code{
+      background: rgba(255,255,255,.7);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 1px 6px;
+      font-size: 11px;
+      color: var(--ink);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>Program Support Workflow (CTO Support + System Governance)</h1>
+    <p class="sub">
+      Program Support ensures the system runs cleanly and provides visibility to the CTO. Program Support is not a manager of engineers.
+      All work communication remains in ClickUp task comments and public views; if a call/meeting happens, a short summary is documented in the task comments afterward.
+      Program Support does <strong>not</strong> communicate directly to Engineers or HODs about issues without CTO alignment first.
+    </p>
+
+    <div class="legend">
+      <div class="pill">Primary role: CTO support + workflow visibility + system hygiene</div>
+      <div class="pill">No direct escalations to HODs/Engineers without CTO discussion first</div>
+      <div class="pill">Use ClickUp public record as the default communication channel</div>
+      <div class="pill">Outcome: weekly HQ-ready Actual vs Effective project reporting</div>
+    </div>
+
+    <div class="flow">
+
+      <!-- Step 1: Daily scan -->
+      <div class="row">
+        <div class="node scan">
+          <div class="title">Daily Review Latency Scan <span class="tag">Frequency: Daily</span></div>
+          <div class="meta">Program Support scans the system to identify workflow risk (not to judge individuals).</div>
+          <ul>
+            <li>Check tasks sitting in <code>AWAITING REVIEW</code></li>
+            <li>Identify aged items (e.g., >4 hours, >8 hours, >24 hours)</li>
+            <li>Check if engineers are shifting to Secondary tasks unusually</li>
+          </ul>
+          <div class="rule">
+            Program Support records findings privately for CTO review. Do not message HODs/Engineers directly at this stage.
+          </div>
+        </div>
+
+        <div class="connector">
+          <div class="line"></div>
+          <div>Compile observations</div>
+        </div>
+
+        <div class="node triage">
+          <div class="title">Triage & Categorize Findings <span class="tag">System view</span></div>
+          <div class="meta">Convert raw observations into actionable categories the CTO can decide on.</div>
+          <ul>
+            <li><strong>Type A:</strong> Normal (within target review time)</li>
+            <li><strong>Type B:</strong> Potential bottleneck (review aging)</li>
+            <li><strong>Type C:</strong> Process issue (wrong status/timer misuse)</li>
+            <li><strong>Type D:</strong> Dependency issue (waiting on external input)</li>
+          </ul>
+          <div class="rule">
+            Each flagged item should have a task link, age, and short factual note (no opinions).
+          </div>
+        </div>
+      </div>
+
+      <div class="center">
+        <div class="vline"></div>
+        <div class="decision">
+          <div class="title">CTO Alignment Gate</div>
+          <p class="meta">
+            Program Support does not directly instruct HODs/Engineers. Program Support first reviews findings with CTO.
+            CTO decides whether to: (a) ignore, (b) ask HOD, (c) change priorities, (d) schedule a discussion.
+          </p>
+        </div>
+        <div class="vline"></div>
+      </div>
+
+      <!-- Step 2: CTO discussion -->
+      <div class="row">
+        <div class="node cto">
+          <div class="title">Brief CTO (Short, Structured) <span class="tag">Owner: Program Support</span></div>
+          <div class="meta">Provide the CTO a quick decision-ready summary (5–10 minutes).</div>
+          <ul>
+            <li>Top 3 aged review items (project-wise)</li>
+            <li>Any repeated pattern (same area multiple times)</li>
+            <li>Any “system hygiene” issue affecting reporting quality</li>
+          </ul>
+
+          <div class="callout">
+            <strong>CTO’s decision options:</strong><br/>
+            <span class="kbd">1) No action</span> &nbsp;
+            <span class="kbd">2) Ask HOD via ClickUp comment</span> &nbsp;
+            <span class="kbd">3) Reassign review / delegate</span> &nbsp;
+            <span class="kbd">4) Schedule short call</span> &nbsp;
+            <span class="kbd">5) Update priorities / scope</span>
+          </div>
+
+          <div class="rule">
+            Program Support documents CTO’s decision as a private note or as a ClickUp Doc (internal), then supports execution.
+          </div>
+        </div>
+      </div>
+
+      <div class="center">
+        <div class="vline"></div>
+        <div class="decision">
+          <div class="title">Execute CTO-Approved Actions</div>
+          <p class="meta">
+            Any outreach or change should happen through ClickUp public record when possible. If a call/meeting occurs, ensure the outcome is summarized back in the task comments.
+          </p>
+        </div>
+        <div class="vline"></div>
+      </div>
+
+      <!-- Step 3: Action paths -->
+      <div class="cols">
+
+        <div>
+          <div class="node action">
+            <div class="title">Action Path 1: ClickUp Public Comment <span class="tag">CTO-approved</span></div>
+            <div class="meta">Preferred method to preserve transparency and record.</div>
+            <ul>
+              <li>CTO posts comment (or requests Program Support to post on CTO’s behalf)</li>
+              <li>Comment is factual + action-oriented</li>
+              <li>Linked to the task(s) to clear</li>
+            </ul>
+            <div class="rule">
+              Example comment: “Please review and update status today. Engineer has shifted to other task due to pending decision.”
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="node action">
+            <div class="title">Action Path 2: Call/Meeting (When Needed) <span class="tag">CTO-approved</span></div>
+            <div class="meta">Allowed when it resolves blockers faster than async comments.</div>
+            <ul>
+              <li>CTO or HOD may call engineer (or short meeting)</li>
+              <li>Purpose: clarify requirement / choose option / unblock</li>
+              <li>Decision must return to ClickUp record</li>
+            </ul>
+
+            <div class="callout">
+              <strong>Mandatory record rule:</strong><br/>
+              After the call/meeting, add a brief summary into the ClickUp task comments.
+              <br/><br/>
+              Template:<br/>
+              <span class="kbd">“10-min call between HOD and Engineer at 15:10. Discussed X. Decision: proceed with Y. Next step: Z. Status updated to IN PROGRESS.”</span>
+            </div>
+
+            <div class="rule">
+              Program Support may remind the CTO to ensure this summary exists, but does not “police” engineers/HODs directly.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="center">
+        <div class="vline"></div>
+        <div class="decision">
+          <div class="title">Weekly & Monthly Reporting Support</div>
+          <p class="meta">Program Support supports clean reporting for HQ and leadership by ensuring the system data is usable and consistent.</p>
+        </div>
+        <div class="vline"></div>
+      </div>
+
+      <!-- Step 4: Reporting -->
+      <div class="row">
+        <div class="node report">
+          <div class="title">Weekly Snapshot Preparation <span class="tag">Frequency: Weekly</span></div>
+          <div class="meta">Provide CTO a one-page operational picture and assist HR with clean extraction.</div>
+          <ul>
+            <li>Top blockers (project-wise, not personal)</li>
+            <li>Review latency trends (team view)</li>
+            <li>Secondary-task spikes (possible dependency issues)</li>
+            <li>System hygiene notes (missing statuses, unclear comments)</li>
+          </ul>
+          <div class="rule">
+            Program Support does not publish payroll/attendance numbers; HR owns compliance. Program Support provides workflow insights.
+          </div>
+        </div>
+
+        <div class="connector">
+          <div class="line"></div>
+          <div>Coordinate with HR</div>
+        </div>
+
+        <div class="node report">
+          <div class="title">Support HR Weekly Reconciliation <span class="tag">Joint sync</span></div>
+          <div class="meta">Ensure workflow data aligns with time logs so the weekly report is reliable.</div>
+          <ul>
+            <li>Confirm task statuses match actual work progression</li>
+            <li>Spot “no-task” time entries or unclear allocations</li>
+            <li>Ensure major calls/decisions are captured in comments</li>
+          </ul>
+          <div class="rule">
+            Program Support does not send policy warnings. HR handles compliance reminders; Program Support handles workflow visibility.
+          </div>
+        </div>
+      </div>
+
+      <div class="foot">
+        Notes:
+        <ul>
+          <li><strong>Communication rule:</strong> Default to ClickUp public record. Calls/meetings are allowed when needed, but must be summarized back into the task comments.</li>
+          <li><strong>Authority rule:</strong> Program Support does not override HR or HODs; Program Support supports the CTO with visibility and system hygiene.</li>
+          <li><strong>Escalation rule:</strong> Program Support escalates only to CTO first; CTO decides the next step.</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
